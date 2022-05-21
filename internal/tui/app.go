@@ -1,6 +1,44 @@
 package tui
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"strings"
+
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+// Key bindings
+
+type appKeyMap struct {
+	Help key.Binding
+	Quit key.Binding
+}
+
+func (k appKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Help, k.Quit}
+}
+
+func (k appKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{},
+		{k.Help, k.Quit},
+	}
+}
+
+var keys = appKeyMap{
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "togglehelp"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q"),
+		key.WithHelp("q", "quit"),
+	),
+}
+
+// Views
 
 type View interface {
 	Update(m Model, msg tea.Msg) (tea.Model, tea.Cmd)
@@ -21,20 +59,26 @@ var AppViews = map[ViewName]View{
 	Settings: SettingsView{},
 }
 
+// Model
+
 type ModelUI struct {
-	view       ViewName
-	termWidth  int
-	termHeight int
+	View       ViewName
+	TermWidth  int
+	TermHeight int
+	Keys       appKeyMap
+	Help       help.Model
 }
 
 type Model struct {
-	ui ModelUI
+	UI ModelUI
 }
 
 func NewModel() Model {
 	return Model{
-		ui: ModelUI{
-			view: Repos,
+		UI: ModelUI{
+			View: Repos,
+			Keys: keys,
+			Help: help.New(),
 		},
 	}
 }
@@ -43,22 +87,39 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
+// Application update
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.ui.termWidth = msg.Width
-		m.ui.termHeight = msg.Height
+		m.UI.TermWidth = msg.Width
+		m.UI.TermHeight = msg.Height
+		m.UI.Help.Width = msg.Width
 		return m, nil
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
+		switch {
+		case key.Matches(msg, m.UI.Keys.Help):
+			m.UI.Help.ShowAll = !m.UI.Help.ShowAll
+			return m, nil
+		case key.Matches(msg, m.UI.Keys.Quit):
 			return m, tea.Quit
 		}
 	}
 
-	return AppViews[m.ui.view].Update(m, msg)
+	return AppViews[m.UI.View].Update(m, msg)
 }
 
+// Application view
+
 func (m Model) View() string {
-	return AppViews[m.ui.view].View(m)
+	appView := AppViews[m.UI.View].View(m)
+	appViewHeight := strings.Count(appView, "\n")
+	helpView := m.UI.Help.View(m.UI.Keys)
+
+	if m.UI.TermHeight > 0 {
+		return appView + lipgloss.PlaceVertical(m.UI.TermHeight-appViewHeight, lipgloss.Bottom, helpView)
+	} else {
+		return appView + "\n\n" + helpView
+	}
+
 }

@@ -15,7 +15,7 @@ func (v AboutView) Update(m Model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			m.ui.view = Repos
+			m.UI.View = Repos
 			return m, nil
 		}
 	}
@@ -24,8 +24,8 @@ func (v AboutView) Update(m Model, msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (v AboutView) View(m Model) string {
-	titleStyle := styles.Title.Width(m.ui.termWidth)
-	subtitleStyle := styles.Subtitle.Width(m.ui.termWidth)
+	titleStyle := styles.Title.Width(m.UI.TermWidth)
+	subtitleStyle := styles.Subtitle.Width(m.UI.TermWidth)
 
 	s := fmt.Sprintln(titleStyle.Render("repw"))
 	s += fmt.Sprintln(subtitleStyle.Render(config.Version))
