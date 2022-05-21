@@ -8,8 +8,11 @@ func (v ReposView) Update(m Model, msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "a", "F1":
+		case "a":
 			m.ui.view = About
+			return m, nil
+		case ",":
+			m.ui.view = Settings
 			return m, nil
 		}
 	}

@@ -10,13 +10,15 @@ type View interface {
 type ViewName string
 
 const (
-	Repos ViewName = "repos"
-	About ViewName = "about"
+	Repos    ViewName = "repos"
+	About    ViewName = "about"
+	Settings ViewName = "settings"
 )
 
 var AppViews = map[ViewName]View{
-	Repos: ReposView{},
-	About: AboutView{},
+	Repos:    ReposView{},
+	About:    AboutView{},
+	Settings: SettingsView{},
 }
 
 type ModelUI struct {
