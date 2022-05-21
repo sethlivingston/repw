@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	program := tea.NewProgram(tui.NewModel())
+	program := tea.NewProgram(tui.NewModel(), tea.WithAltScreen(), tea.WithMouseCellMotion())
 	err := program.Start()
 	if err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

@@ -20,7 +20,9 @@ var AppViews = map[ViewName]View{
 }
 
 type ModelUI struct {
-	view ViewName
+	view       ViewName
+	termWidth  int
+	termHeight int
 }
 
 type Model struct {
@@ -41,6 +43,10 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.ui.termWidth = msg.Width
+		m.ui.termHeight = msg.Height
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
